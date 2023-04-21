@@ -80,6 +80,23 @@ pub fn derive(input: TokenStream) -> TokenStream {
         })
         .collect::<Vec<_>>();
 
+    let builder_setter_methods = fields
+        .named
+        .iter()
+        .map(|field| {
+            let ident = field.ident.clone().expect(
+                "We only derive Builder for structs with named fields, so the ident must exist",
+            );
+            let ty = field.ty.clone();
+            quote! {
+                pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
+                    self.#ident = ::std::option::Option::Some(#ident);
+                    self
+                }
+            }
+        })
+        .collect::<Vec<_>>();
+
     quote! {
         impl #ident {
             pub fn builder() -> #builder_struct {
@@ -94,6 +111,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
 
         impl #builder_struct {
+            #(#builder_setter_methods)*
+
             pub fn build(self) -> #ident {
                 unimplemented!()
             }
