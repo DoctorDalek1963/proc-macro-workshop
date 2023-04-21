@@ -111,7 +111,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 format!("{field_ident} must be set before we can build the {ident}");
 
             quote! {
-                let #field_ident = self.#field_ident.ok_or(
+                let #field_ident = self.#field_ident.clone().ok_or(
                     ::std::boxed::Box::<dyn ::std::error::Error>::from(
                         ::std::string::String::from(#error_message)
                     )
@@ -147,7 +147,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
         impl #builder_struct {
             #(#builder_setter_methods)*
 
-            pub fn build(self) -> ::std::result::Result<#ident, ::std::boxed::Box<dyn ::std::error::Error>> {
+            pub fn build(&mut self) -> ::std::result::Result<
+                #ident, ::std::boxed::Box<dyn ::std::error::Error>
+            > {
                 #(#builder_build_fn_let_bindings)*
 
                 ::std::result::Result::Ok(#ident {
