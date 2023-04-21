@@ -11,6 +11,8 @@
 //         }
 //     }
 
+#![allow(dead_code)]
+
 use derive_builder::Builder;
 
 #[derive(Builder)]

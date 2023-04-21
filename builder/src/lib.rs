@@ -97,6 +97,40 @@ pub fn derive(input: TokenStream) -> TokenStream {
         })
         .collect::<Vec<_>>();
 
+    // The `let field = field.ok_or()?;` bindings
+    let builder_build_fn_let_bindings = fields
+        .named
+        .iter()
+        .map(|field| {
+            //let x: Option<u8> = None;
+            //x.ok_or(String::from().into())?
+            let field_ident = field.ident.clone().expect(
+                "We only derive Builder for structs with named fields, so the ident must exist",
+            );
+            let error_message =
+                format!("{field_ident} must be set before we can build the {ident}");
+
+            quote! {
+                let #field_ident = self.#field_ident.ok_or(
+                    ::std::boxed::Box::<dyn ::std::error::Error>::from(
+                        ::std::string::String::from(#error_message)
+                    )
+                )?;
+            }
+        })
+        .collect::<Vec<_>>();
+
+    // Just the names of the fields
+    let field_names = fields
+        .named
+        .iter()
+        .map(|field| {
+            field.ident.clone().expect(
+                "We only derive Builder for structs with named fields, so the ident must exist",
+            )
+        })
+        .collect::<Vec<_>>();
+
     quote! {
         impl #ident {
             pub fn builder() -> #builder_struct {
@@ -113,8 +147,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
         impl #builder_struct {
             #(#builder_setter_methods)*
 
-            pub fn build(self) -> #ident {
-                unimplemented!()
+            pub fn build(self) -> ::std::result::Result<#ident, ::std::boxed::Box<dyn ::std::error::Error>> {
+                #(#builder_build_fn_let_bindings)*
+
+                ::std::result::Result::Ok(#ident {
+                    #(#field_names),*
+                })
             }
         }
     }
