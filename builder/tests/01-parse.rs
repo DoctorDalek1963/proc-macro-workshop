@@ -21,6 +21,8 @@
 //   - An example of a derive macro implemented using Syn:
 //     https://github.com/dtolnay/syn/tree/master/examples/heapsize
 
+#![allow(dead_code)]
+
 use derive_builder::Builder;
 
 #[derive(Builder)]

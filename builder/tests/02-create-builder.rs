@@ -42,6 +42,8 @@
 //   - Joining together the type name + "Builder" to make the builder's name:
 //     https://docs.rs/syn/1.0/syn/struct.Ident.html
 
+#![allow(dead_code)]
+
 use derive_builder::Builder;
 
 #[derive(Builder)]
